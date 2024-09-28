@@ -1,4 +1,4 @@
-# Load necessary library
+# Load ggplot
 library(ggplot2)
 
 # Define the function c(x) = -x^2 + 3x
@@ -9,13 +9,13 @@ c_x <- function(x) {
 # Generate x values
 x_values <- seq(0, 3, length.out = 400)
 
-# Calculate c(x) values
+# Generate c(x) values
 y_values <- c_x(x_values)
 
 # Create a data frame for plotting
 data <- data.frame(x = x_values, c_x = y_values)
 
-# Plotting the function
+# Plot the function
 ggplot(data, aes(x = x, y = c_x)) +
   geom_line(color = 'blue') +
   geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
