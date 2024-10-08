@@ -7,23 +7,15 @@ editor: visual
 ## Microsoft
 
 ```{r}
-# Load necessary libraries
-library(ggplot2)
+library(tidyverse)
+# Load the readr package
+library(readr)
 
-# Load the data
-msft_data <- read.csv("msft.csv")
+# Read CSV from URL
+url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
+msft_data <- read_csv(url)
 
-# Preview the data
+# View the first few rows of the data
 head(msft_data)
-summary(msft_data)
 
 ```
-
-You can add options to executable code like this
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
