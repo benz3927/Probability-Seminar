@@ -52,7 +52,7 @@ S_T_exp <- S_curr * exp(mu * T)
 cat("Expected value of MSFT in one year:", S_T_exp, "\n")
 
 # Simulate GBM over one year
-set.seed(123)  # For reproducibility
+set.seed(2024)  # For reproducibility
 nSims <- 1000  # Number of simulations
 stepSize <- 1/252  # Trading days in a year
 nSteps <- ceiling(T / stepSize)
@@ -68,3 +68,6 @@ final_prices <- wieners[,nSteps + 1]
 
 # Plot distribution of final prices
 hist(final_prices, breaks = 50, col = "skyblue", main = "Distribution of MSFT Price in One Year", xlab = "Price")
+
+
+##
