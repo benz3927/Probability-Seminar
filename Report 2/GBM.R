@@ -16,8 +16,8 @@ stepSize <- 0.01 # Simulation time step
 totalTime <- 10 # Length of time to simulate
 upperLimit <- 200 # Upper hitting bound
 lowerLimit <- 50 # Lower hitting bound
-volatility <- 0.24 # Volatility sigma
-drift <- 0.24 # Drift mu
+volatility <- 0.2 # Volatility sigma
+drift <- 0.26 # Drift mu
 startPrice <- 45.53 # Starting value
 nSteps <- ceiling(totalTime / stepSize)
 
@@ -51,7 +51,7 @@ abline(lowerLimit, 0, col = "black", lty = 2)
 lines(msft_data$time_numeric, msft_data$value, col = "blue", lwd = 2)
 
 # Calculate and plot the mean price at time t = 10
-mean_price_at_t_10 <- mean(wieners[, nSteps + 1])
+mean_price_at_t_10 <- median(wieners[, nSteps + 1])
 abline(h = mean_price_at_t_10, col = "darkgreen", lwd = 2, lty = 1)
 
 # Print the mean price
