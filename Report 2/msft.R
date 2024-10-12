@@ -20,6 +20,7 @@ valid_log_returns <- na.omit(msft_data$log_returns)
 
 # Estimate drift (mu) and volatility (sigma)
 mu <- mean(valid_log_returns)
+mu
 sigma <- sd(valid_log_returns)
 
 cat("Estimated Drift (mu):", mu, "\n")
