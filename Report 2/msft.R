@@ -68,22 +68,3 @@ final_prices <- wieners[,nSteps + 1]
 
 # Plot distribution of final prices
 hist(final_prices, breaks = 50, col = "skyblue", main = "Distribution of MSFT Price in One Year", xlab = "Price")
-
-
-# Given parameters
-S0 <- msft_data$value[length(msft_data$value)]  # Last known MSFT price
-mu <- mean(valid_log_returns)  # Estimated drift
-sigma <- sd(valid_log_returns)  # Estimated volatility
-T <- 1  # Time horizon (one year)
-
-# Expected value (mean) in one year
-S_T_exp <- S0 * exp(mu * T)
-cat("Expected value of MSFT in one year:", S_T_exp, "\n")
-
-# Variance in one year
-S_T_var <- (S0^2) * exp(2 * mu * T) * (exp(sigma^2 * T) - 1)
-cat("Variance of MSFT in one year:", S_T_var, "\n")
-
-# Standard deviation in one year
-S_T_std <- S0 * exp(mu * T) * sqrt(exp(sigma^2 * T) - 1)
-cat("Standard deviation of MSFT in one year:", S_T_std, "\n")
