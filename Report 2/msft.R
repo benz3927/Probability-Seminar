@@ -1,71 +1,52 @@
-# Load the necessary libraries
+# --- Setup for Libraries ---
 library(scales)
+set.seed(2024)
 
-# Read CSV from the URL
+# --- Reading CSV Data ---
 url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
 msft_data <- read.csv(url)
 
-# Ensure the column names are correct
-str(msft_data)
+# Check the data loaded correctly
+print(head(msft_data))  # Print the first few rows of the data
 
-# Calculate log returns for estimating mu and sigma
-log_returns <- rep(NA, length(msft_data$value))  # Initialize with NA values
-log_returns[-1] <- diff(log(msft_data$value))  # Skip the first NA value
+# Get the initial price and last price from the dataset
+first_price <- head(msft_data[, 2], n = 1)
+last_price <- tail(msft_data[, 2], n = 1)
 
-# Add log returns to the data frame
-msft_data$log_returns <- log_returns
+# --- Question 1: Probability of hitting $20 before $416.06 ---
+# Parameters
+S_0 <- 45.53    # Initial price (starting price MSFT)
+S_lower <- 20   # Lower boundary ($20)
+S_upper <- 416.06  # Upper boundary ($416.06)
+mu <- 0.25      # Drift
+sigma <- 0.27   # Volatility
 
-# Remove NA values for estimation
-valid_log_returns <- na.omit(msft_data$log_returns)
+# Compute a and b for the problem (relative distances)
+a <- log(S_upper / S_0)  
+b <- log(S_lower / S_0)
 
-# Estimate drift (mu) and volatility (sigma)
-mu <- mean(valid_log_returns)
-mu
-sigma <- sd(valid_log_returns)
+# Compute the probability of hitting S_upper before S_lower
+prob_hit_upper_before_lower  <- (1 - exp(- (2 * mu * b) / sigma^2)) / 
+  (exp(- (2 * mu * a) / sigma^2) - exp(- (2 * mu * b) / sigma^2))
 
-cat("Estimated Drift (mu):", mu, "\n")
-cat("Estimated Volatility (sigma):", sigma, "\n")
+# Therefore, probability of hitting lower = 1 - p:
+prob_hit_lower_before_upper <- 1 - prob_hit_upper_before_lower
+# Print the result for Question 1
+cat("Probability of hitting $20 before $416.06:", prob_hit_lower_before_upper, "\n")
 
-# Starting price
-S0 <- 45.53
+# --- Question 2: Equal chance of dropping to $400 or rising to x ---
+# Parameters
+S_current <- 416.06  # Current price
+S_lower <- 400       # Lower boundary ($400)
 
-# Bounds
-L <- 20
-U <- 416.06
+# Compute the relative log distance for the lower boundary
+b <- log(S_lower / S_current)  # Log distance for the lower boundary
 
-# Probability of hitting L before U
-prob_hitting_L_before_U <- (log(S0/L) - mu) / (log(U/L))
-cat("Probability of hitting $20 before $416.06:", prob_hitting_L_before_U, "\n")
+# Solve for a using the correct derived formula
+a <- (-sigma^2 / (2 * mu)) * log(2 - exp(-(2 * mu * b) / sigma^2))
 
-# Current price
-S_curr <- 416.06
-S_lower <- 400
+# Solve for x using the value of a
+x_upper <- S_current * exp(a)
 
-# Solve for x
-x <- S_curr * exp(2 * mu / sigma^2 * log(S_curr / S_lower))
-cat("Equal chance for MSFT to drop to $400 or rise to:", x, "\n")
-
-# Time horizon
-T <- 1  # One year
-
-# Expected value
-S_T_exp <- S_curr * exp(mu * T)
-cat("Expected value of MSFT in one year:", S_T_exp, "\n")
-
-# Simulate GBM over one year
-set.seed(2024)  # For reproducibility
-nSims <- 1000  # Number of simulations
-stepSize <- 1/252  # Trading days in a year
-nSteps <- ceiling(T / stepSize)
-
-# Simulate Geometric Brownian Motion
-wieners <- matrix(S_curr, nSims, nSteps + 1)
-for (i in 1:nSteps) {
-  wieners[,i+1] <- wieners[,i] * exp((mu - 0.5 * sigma^2) * stepSize + sigma * sqrt(stepSize) * rnorm(nSims))
-}
-
-# Final values at one year
-final_prices <- wieners[,nSteps + 1]
-
-# Plot distribution of final prices
-hist(final_prices, breaks = 50, col = "skyblue", main = "Distribution of MSFT Price in One Year", xlab = "Price")
+# Print the result for the upper bound
+cat("Value of x where there's an equal chance of dropping to $400 or rising to x:", x_upper, "\n")
