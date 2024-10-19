@@ -18,7 +18,7 @@ last_price <- tail(msft_data[, 2], n = 1)
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu <- 0.25      # Drift
+mu <- 0.24      # Drift
 sigma <- 0.27   # Volatility
 
 # Compute a and b for the problem (relative distances)
@@ -50,3 +50,29 @@ x_upper <- S_current * exp(a)
 
 # Print the result for the upper bound
 cat("Value of x where there's an equal chance of dropping to $400 or rising to x:", x_upper, "\n")
+
+# --- Question 3: Distribution of Prices in One Year ---
+
+# Given values for Question 3
+S_0 <- 416.06  # Current price of MSFT
+mu <- 0.24     # Drift
+sigma <- 0.27  # Volatility
+t <- 1         # Time in years
+
+# Calculate expected value
+expected_value <- S_0 * exp(mu * t)
+
+# Print the expected value result
+cat(sprintf("For S_0 = %.2f, mu = %.2f, sigma = %.2f, t = %.2f:\n", S_0, mu, sigma, t))
+cat(sprintf("Expected Value E[X_t] = %.2f\n", expected_value))
+
+# Calculate variance
+variance <- (S_0^2) * exp(2 * mu * t) * (exp(t * sigma^2) - 1)
+
+# Calculate standard deviation
+std_dev <- sqrt(variance)
+
+# Print the variance and standard deviation results
+cat(sprintf("Variance Var[S_t] = %.2f\n", variance))
+cat(sprintf("Standard Deviation SD[S_t] = %.2f\n", std_dev))
+
