@@ -33,7 +33,7 @@ plt.xlabel('Date')
 plt.ylabel('Price (USD)')
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()
 
 # Step 7: Calculate and display basic statistics
 statistics = df.describe()
@@ -51,4 +51,24 @@ plt.xlabel('Date')
 plt.ylabel('Daily Return')
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()
+
+import numpy as np
+import math
+
+# Step 10: Calculate log returns
+df['Log Return'] = np.log(df['value'] / df['value'].shift(1))
+
+# Step 11: Calculate mean and standard deviation (sigma) of log returns
+mean_log_return = df['Log Return'].mean()
+sigma_log_return = df['Log Return'].std()
+
+# Correct the formula for mu and sigma
+mu = 252* mean_log_return + (1/2) * (sigma_log_return ** 2)
+sigma = sigma_log_return*(252**.5)
+
+# Display the results
+print("\nMu (Mean of Log Returns):", mu)
+print("Sigma (Standard Deviation of Log Returns):", sigma)
+
+
