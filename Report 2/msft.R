@@ -55,8 +55,8 @@ cat("Value of x where there's an equal chance of dropping to $400 or rising to x
 
 # Given values for Question 3
 S_0 <- 416.06  # Current price of MSFT
-mu <- 0.24     # Drift
-sigma <- 0.27  # Volatility
+mu <- 0.265     # Drift
+sigma <- 0.272   # Volatility
 t <- 1         # Time in years
 
 # Calculate expected value
