@@ -18,8 +18,8 @@ last_price <- tail(msft_data[, 2], n = 1)
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu <- 0.24      # Drift
-sigma <- 0.27   # Volatility
+mu <- 0.261      # Drift
+sigma <- 0.272   # Volatility
 
 # Compute a and b for the problem (relative distances)
 a <- log(S_upper / S_0)  
@@ -55,7 +55,7 @@ cat("Value of x where there's an equal chance of dropping to $400 or rising to x
 
 # Given values for Question 3
 S_0 <- 416.06  # Current price of MSFT
-mu <- 0.265     # Drift
+mu <- 0.261     # Drift
 sigma <- 0.272   # Volatility
 t <- 1         # Time in years
 
