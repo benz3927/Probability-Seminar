@@ -12,8 +12,8 @@ set.seed(2024)
 
 # --- Plot MSFT Data (2014-2024) ---
 plot(msft_data$time_numeric, msft_data$value, type = "l", col = rgb(0, 0, 0.5, 0.8), lwd = 1.5,
-     xlab = "Time (Years)", ylab = "Price", main = "MSFT Price (2014-2026) and GBM Projections",
-     xlim = c(0, 12), ylim = c(0, max(msft_data$value) * 1.5))
+     xlab = "Time (Years)", ylab = "Price", main = "MSFT Pr    ice (2014-2026) and GBM Projections",
+     xlim = c(0, 12), ylim = c(0, 850))
 
 # Add vertical line at the end of actual data
 abline(v = max(msft_data$time_numeric), col = "black", lty = 2)
@@ -50,9 +50,9 @@ polygon(c(sim_time, rev(sim_time)),
         col = alpha("lightblue", 0.4), border = NA)
 
 # Plot bullish, bearish, and median paths (add lines to the existing plot)
-lines(sim_time, bullish_path, col = rgb(0, 0.5, 0, 0.7), lwd = 1)   # Dark green
-lines(sim_time, bearish_path, col = rgb(0.9, 0, 0, 0.7), lwd = 1)  # Dark red
-lines(sim_time, median_path, col = rgb(0, 0, 0.8, 0.7), lwd = 1)   # Muted blue
+lines(sim_time, bullish_path, col = rgb(0, 0.5, 0, 0.7), lwd = 1.5)   # Dark green
+lines(sim_time, bearish_path, col = rgb(0.9, 0, 0, 0.7), lwd = 1.5)  # Dark red
+lines(sim_time, median_path, col = rgb(0, 0, 0.8, 0.7), lwd = 1.5)   # Muted blue
 
 # Add legend
 legend("topleft", legend = c("MSFT Actual", "Bullish (75%)", "Bearish (25%)", "Median Path"),
