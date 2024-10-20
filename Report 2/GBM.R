@@ -1,4 +1,5 @@
 library(scales)
+library(parallel)
 
 # Read CSV data from URL
 url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
@@ -18,10 +19,7 @@ log_returns <- diff(log(msft_data$value))
 sigma <- sd(log_returns) * sqrt(252)  
 
 # --- Setup for Grid Search ---
-set.seed(2024)
-mu_candidates <- seq(0.01, 0.5, by = 0.001)  # Candidate values for mu
-best_mu <- NA  # Variable to store the best mu
-min_diff <- Inf  # Variable to store the minimum difference
+mu_candidates <- seq(0.001, 1, by = 0.001)  # Candidate values for mu
 median_last_20_prices <- median(tail(msft_data$value, n = 20))  # Median of last 20 prices
 
 # --- Simulation Parameters ---
@@ -29,33 +27,39 @@ nSims <- 100  # Number of simulations
 nSteps <- 2516  # Total number of steps for 2516 days
 startPrice <- msft_data$value[1]  # Starting value (first price in dataset)
 
-# --- Perform Grid Search ---
-for (mu in mu_candidates) {
-  # Initialize matrix for Brownian motions
+# Function for running GBM simulations
+run_simulation <- function(mu) {
+  set.seed(2024)
   wieners <- matrix(0, nSims, nSteps + 1)  # Initialize to zeros
   wieners[, 1] <- startPrice  # Set the starting price
   
-  # Generate Geometric Brownian motions for each candidate mu
   for (i in 1:nSteps) {
     wieners[, i + 1] <- wieners[, i] * (1 + mu / 252 + sigma * rnorm(nSims, 0, 1 / sqrt(252)))
   }
   
-  # Find the median GBM price at the final time step
   final_gbm_price <- median(wieners[, nSteps + 1])
-  
-  # Compute the absolute difference between the median of the last 20 prices and final GBM price
   diff <- abs(median_last_20_prices - final_gbm_price)
   
-  # Update best_mu if this mu gives a smaller difference
-  if (diff < min_diff) {
-    min_diff <- diff
-    best_mu <- mu
-  }
+  return(c(mu, diff))  # Return mu and difference
 }
+
+# Set up parallel computing
+cl <- makeCluster(detectCores() - 1)  # Use all but one core
+clusterExport(cl, varlist = c("nSims", "nSteps", "startPrice", "sigma", "median_last_20_prices"))
+
+# Run simulations in parallel
+results <- parSapply(cl, mu_candidates, run_simulation)
+
+# Stop the cluster
+stopCluster(cl)
+
+# Find the best mu and minimum difference
+best_mu_index <- which.min(results[2, ])
+best_mu <- results[1, best_mu_index]
+min_diff <- results[2, best_mu_index]
 
 # --- Output the best mu and corresponding minimum difference ---
 cat("Best mu:", best_mu, "\n")
-cat("Minimum difference between median of last 20 MSFT prices and GBM final price:", min_diff, "\n")
 
 # Parameters for hitting bounds
 upperLimit <- 450  # Upper hitting bound
@@ -93,7 +97,7 @@ abline(h = upperLimit, col = "black", lty = 2)
 abline(h = lowerLimit, col = "black", lty = 2)
 
 # Plot actual MSFT data on top
-lines(msft_data$time_numeric, msft_data$value, col = "blue", lwd = 2)
+lines(msft_data$time_numeric, msft_data$value, col = "orange", lwd = 2)
 
 # Calculate and plot the median price at the final time step
 median_price_at_t_final <- median(wieners[, nSteps + 1])
