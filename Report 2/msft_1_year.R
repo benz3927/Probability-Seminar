@@ -13,7 +13,7 @@ set.seed(2024)
 
 # --- Plot MSFT Data (2014-2024) ---
 plot(msft_data$time_numeric, msft_data$value, type = "l", col = rgb(0, 0, 0.5, 0.8), lwd = 1.5,
-     xlab = "Time (Days)", ylab = "Price", main = "MSFT Price GBM Projections (2014-2026)",
+     xlab = "Time (Days)", ylab = "Price ($)", main = "MSFT Price GBM Projections (2014-2026)",
      xlim = c(1, nRows + 2 * 252), ylim = c(0, max(msft_data$value) * 1.5))
 
 # Add vertical line at the end of actual data
@@ -21,7 +21,7 @@ abline(v = nRows, col = "black", lty = 2)
 
 # Parameters for Simulation
 S_0 <- tail(msft_data$value, 1)   # Starting price at end of actual data
-mu <- 0.261                       # Drift
+mu <- 0.253                       # Drift
 sigma <- 0.272                    # Estimated volatility
 nSims <- 100                      # Number of GBM simulations
 stepSize <- 1 / 252               # Daily time step (252 trading days in a year)
