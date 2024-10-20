@@ -22,7 +22,7 @@ set.seed(2024)
 mu_candidates <- seq(0.01, 0.5, by = 0.001)  # Candidate values for mu
 best_mu <- NA  # Variable to store the best mu
 min_diff <- Inf  # Variable to store the minimum difference
-median_last_10_prices <- median(tail(msft_data$value, n = 10))  # Median of last 10 prices
+median_last_20_prices <- median(tail(msft_data$value, n = 20))  # Median of last 20 prices
 
 # --- Simulation Parameters ---
 nSims <- 100  # Number of simulations
@@ -43,8 +43,8 @@ for (mu in mu_candidates) {
   # Find the median GBM price at the final time step
   final_gbm_price <- median(wieners[, nSteps + 1])
   
-  # Compute the absolute difference between the median of the last 10 prices and final GBM price
-  diff <- abs(median_last_10_prices - final_gbm_price)
+  # Compute the absolute difference between the median of the last 20 prices and final GBM price
+  diff <- abs(median_last_20_prices - final_gbm_price)
   
   # Update best_mu if this mu gives a smaller difference
   if (diff < min_diff) {
@@ -55,7 +55,7 @@ for (mu in mu_candidates) {
 
 # --- Output the best mu and corresponding minimum difference ---
 cat("Best mu:", best_mu, "\n")
-cat("Minimum difference between median of last 10 MSFT prices and GBM final price:", min_diff, "\n")
+cat("Minimum difference between median of last 20 MSFT prices and GBM final price:", min_diff, "\n")
 
 # Parameters for hitting bounds
 upperLimit <- 450  # Upper hitting bound
@@ -99,8 +99,8 @@ lines(msft_data$time_numeric, msft_data$value, col = "blue", lwd = 2)
 median_price_at_t_final <- median(wieners[, nSteps + 1])
 abline(h = median_price_at_t_final, col = "darkgreen", lwd = 2, lty = 1)
 
-# Print the median price and compare with the last 10 actual prices
-cat("Median of Last 10 MSFT Prices:", median_last_10_prices, "\n")
+# Print the median price and compare with the last 20 actual prices
+cat("Median of Last 20 MSFT Prices:", median_last_20_prices, "\n")
 cat("Median Price at t = Final from GBM:", median_price_at_t_final, "\n")
 
 # Print the Best Mu and Sigma
