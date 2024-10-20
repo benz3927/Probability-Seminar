@@ -2,8 +2,8 @@
 library(ggplot2)
 
 # Define parameters
-mu <- 0.24          # Drift
-sigma <- 0.27       # Volatility
+mu <- 0.261          # Drift
+sigma <- 0.272       # Volatility
 S_0 <- 416.06       # Initial value
 
 # Create a sequence of x values for the CDF
@@ -22,8 +22,8 @@ cdf_data_t1 <- cdf_data_t1[!is.na(cdf_data_t1$cdf) & cdf_data_t1$cdf >= 0, ]
 # Plot the CDF for t = 1 using ggplot2
 ggplot(cdf_data_t1, aes(x = x, y = cdf)) +
   geom_line(color = "lightblue", size = 1.2) +
-  labs(title = expression(paste("Cumulative Distribution Function of ", X[1], " at t = 1 year")),
-       x = "Value",
+  labs(title = expression(paste("Cumulative Distribution Function of ", X, " in One Year")),
+       x = "Value ($)",
        y = "Cumulative Probability") +
   theme_minimal() +
   xlim(0, max(x) * 1.1) +  # Extend x-axis limit by 10%
