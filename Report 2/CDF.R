@@ -2,7 +2,7 @@
 library(ggplot2)
 
 # Define parameters
-mu <- 0.261          # Drift
+mu <- 0.253          # Drift
 sigma <- 0.272       # Volatility
 S_0 <- 416.06       # Initial value
 
