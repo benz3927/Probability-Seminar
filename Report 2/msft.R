@@ -18,7 +18,7 @@ last_price <- tail(msft_data[, 2], n = 1)
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu <- 0.261      # Drift
+mu <- 0.253      # Drift
 sigma <- 0.272   # Volatility
 
 # Compute a and b for the problem (relative distances)
