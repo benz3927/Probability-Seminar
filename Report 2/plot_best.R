@@ -1,6 +1,9 @@
 library(scales)
 library(parallel)
 
+# Set seed for overall script
+set.seed(2024)
+
 # Read CSV data from URL
 url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
 msft_data <- read.csv(url)
@@ -29,7 +32,7 @@ startPrice <- msft_data$value[1]  # Starting value (first price in dataset)
 
 # Function for running GBM simulations
 run_simulation <- function(mu) {
-  set.seed(2024)
+  set.seed(2024)  # Set the seed inside the function
   wieners <- matrix(0, nSims, nSteps + 1)  # Initialize to zeros
   wieners[, 1] <- startPrice  # Set the starting price
   
@@ -61,47 +64,34 @@ min_diff <- results[2, best_mu_index]
 # --- Output the best mu and corresponding minimum difference ---
 cat("Best mu:", best_mu, "\n")
 
-# Parameters for hitting bounds
-upperLimit <- 450  # Upper hitting bound
-lowerLimit <- 20   # Lower hitting bound
-
-# Initialize matrix for Brownian motions and vectors for hit times/values
+# Initialize matrix for Brownian motions
 wieners <- matrix(0, nSims, nSteps + 1)  # +1 for initial price
 wieners[, 1] <- startPrice  # Set starting price
-hitStep <- rep(0, nSims)  # Step on which the B.M. hits upper/lower
-hitValue <- rep(0, nSims)  # Which value was hit (upper/lower)
 
 # Generate Geometric Brownian motions with the best mu
 for (i in 1:nSteps) {
   wieners[, i + 1] <- wieners[, i] * (1 + best_mu / 252 + sigma * rnorm(nSims, 0, 1 / sqrt(252)))
-  
-  # Track hitting values and steps
-  hitValue <- hitValue +
-    (hitValue == 0) * (wieners[, i + 1] > upperLimit) * upperLimit +
-    (hitValue == 0) * (wieners[, i + 1] < lowerLimit) * lowerLimit
-  
-  hitStep <- hitStep +
-    (hitStep == 0) * (hitValue != 0) * i
 }
 
-# Plot all of the Geometric Brownian Motions
-colorArray <- rep("black", nSims)
-colorArray[hitValue == upperLimit] <- "blue"
-colorArray[hitValue == lowerLimit] <- "red"
+# Plot all of the Geometric Brownian Motions with light blue color
+colorArray <- "lightblue"  # Set color to light blue
 
 # Use seq(1, nSteps + 1) to match the number of simulation steps
 matplot(seq(1, nSteps + 1), t(wieners), type = "l", lty = 1, 
         col = alpha(colorArray, 0.2), xlab = "Time (Days)", 
-        ylab = "Price", main = "Geometric Brownian Motion vs Actual Data")
-abline(h = upperLimit, col = "black", lty = 2)
-abline(h = lowerLimit, col = "black", lty = 2)
+        ylab = "Price ($)", main = "GBM vs MSFT Actual Price (2014-2024)")
 
-# Plot actual MSFT data on top
-lines(msft_data$time_numeric, msft_data$value, col = "orange", lwd = 2)
+# Plot actual MSFT data on top with brighter color and thicker line
+lines(msft_data$time_numeric, msft_data$value, col = "blue", lwd = 3)
 
 # Calculate and plot the median price at the final time step
 median_price_at_t_final <- median(wieners[, nSteps + 1])
 abline(h = median_price_at_t_final, col = "darkgreen", lwd = 2, lty = 1)
+
+# Add a legend
+legend("topright", legend = c("Actual MSFT Data", "GBM Median Price"),
+       col = c("blue", "darkgreen"), lwd = c(3, 2), lty = c(1, 1),
+       bty = "n")
 
 # Print the median price and compare with the last 20 actual prices
 cat("Median of Last 20 MSFT Prices:", median_last_20_prices, "\n")
