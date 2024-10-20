@@ -1,6 +1,6 @@
 library(scales)
 library(parallel)
-
+set.seed(2024)
 # Read CSV data from URL
 url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
 msft_data <- read.csv(url)
@@ -29,7 +29,7 @@ startPrice <- msft_data$value[1]  # Starting value (first price in dataset)
 
 # Function for running GBM simulations
 run_simulation <- function(mu) {
-  set.seed(2024)
+
   wieners <- matrix(0, nSims, nSteps + 1)  # Initialize to zeros
   wieners[, 1] <- startPrice  # Set the starting price
   
