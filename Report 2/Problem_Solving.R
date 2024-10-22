@@ -18,16 +18,18 @@ last_price <- tail(msft_data[, 2], n = 1)
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu <- 0.253      # Drift
+mu_gbm <- 0.253      # GBM Drift
 sigma <- 0.272   # Volatility
+mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
+# Using Ito's Lemma
 
 # Compute a and b for the problem (relative distances)
-a <- log(S_upper / S_0)  
-b <- log(S_lower / S_0)
+a <- log(S_upper) - log(S_0)  
+b <- log(S_lower) - log(S_0)
 
 # Compute the probability of hitting S_upper before S_lower
-prob_hit_upper_before_lower  <- (1 - exp(- (2 * mu * b) / sigma^2)) / 
-  (exp(- (2 * mu * a) / sigma^2) - exp(- (2 * mu * b) / sigma^2))
+prob_hit_upper_before_lower  <- (1 - exp(- (2 * mu_bm * b) / sigma^2)) / 
+  (exp(- (2 * mu_bm * a) / sigma^2) - exp(- (2 * mu_bm * b) / sigma^2))
 
 # Therefore, probability of hitting lower = 1 - p:
 prob_hit_lower_before_upper <- 1 - prob_hit_upper_before_lower
@@ -40,10 +42,10 @@ S_current <- 416.06  # Current price
 S_lower <- 400       # Lower boundary ($400)
 
 # Compute the relative log distance for the lower boundary
-b <- log(S_lower / S_current)  # Log distance for the lower boundary
+b <- log(S_current) - log(S_lower)  # Log distance for the lower boundary
 
 # Solve for a using the correct derived formula
-a <- (-sigma^2 / (2 * mu)) * log(2 - exp(-(2 * mu * b) / sigma^2))
+a <- (-sigma^2 / (2 * mu_bm)) * log(2 - exp((2 * mu_bm * b) / sigma^2))
 
 # Solve for x using the value of a
 x_upper <- S_current * exp(a)
@@ -55,24 +57,24 @@ cat("Value of x where there's an equal chance of dropping to $400 or rising to x
 
 # Given values for Question 3
 S_0 <- 416.06  # Current price of MSFT
-mu <- 0.261     # Drift
+mu_gbm <- 0.258      # GBM Drift from Search
 sigma <- 0.272   # Volatility
 t <- 1         # Time in years
 
 # Calculate expected value
-expected_value <- S_0 * exp(mu * t)
+expected_value <- S_0 * exp(mu_gbm * t)
 
 # Print the expected value result
-cat(sprintf("For S_0 = %.2f, mu = %.2f, sigma = %.2f, t = %.2f:\n", S_0, mu, sigma, t))
+cat(sprintf("For S_0 = %.3f, mu = %.3f, sigma = %.3f, t = %.3f:\n", S_0, mu_gbm, sigma, t))
 cat(sprintf("Expected Value E[X_t] = %.2f\n", expected_value))
 
 # Calculate variance
-variance <- (S_0^2) * exp(2 * mu * t) * (exp(t * sigma^2) - 1)
+variance <- (S_0^2) * exp(2 * mu_gbm * t) * (exp(t * sigma^2) - 1)
 
 # Calculate standard deviation
 std_dev <- sqrt(variance)
 
 # Print the variance and standard deviation results
-cat(sprintf("Variance Var[S_t] = %.2f\n", variance))
-cat(sprintf("Standard Deviation SD[S_t] = %.2f\n", std_dev))
+cat(sprintf("Variance Var[S_t] = %.3f\n", variance))
+cat(sprintf("Standard Deviation SD[S_t] = %.3f\n", std_dev))
 
