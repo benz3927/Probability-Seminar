@@ -22,9 +22,9 @@ cdf_data_t1 <- cdf_data_t1[!is.na(cdf_data_t1$cdf) & cdf_data_t1$cdf >= 0, ]
 # Plot the CDF for t = 1 using ggplot2
 ggplot(cdf_data_t1, aes(x = x, y = cdf)) +
   geom_line(color = "lightblue", size = 1.2) +
-  labs(title = expression(paste("CDF of MSFT Stock Price (GBM) in One Year")),
+  labs(title = expression(paste("CDF of MSFT in One Year (GBM Predictions)")),
        x = "Stock Price (USD)",
-       y = expression(F[X](x))) +
+       y = expression(F[S](s))) +
   theme_minimal() +
   xlim(0, max(x) * 1.1) +  # Extend x-axis limit by 10%
   ylim(0, 1) +  # CDF should be between 0 and 1
