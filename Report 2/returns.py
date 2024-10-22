@@ -64,8 +64,9 @@ mean_log_return = df['Log Return'].mean()
 sigma_log_return = df['Log Return'].std()
 
 # Correct the formula for mu and sigma
-mu = 252* mean_log_return + (1/2) * (sigma_log_return ** 2)
-sigma = sigma_log_return*(252**.5)
+
+sigma = sigma_log_return
+mu = 252*(mean_log_return+0.5*sigma**2)
 
 # Display the results
 print("\nMu (Mean of Log Returns):", mu)
