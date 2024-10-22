@@ -23,6 +23,10 @@ sigma <- sd(log_returns) * sqrt(252)
 mu <- 252*(mean(log_returns) + (1/2) * sd(log_returns)^2)
 
 # Initialize matrix for Brownian motions
+nSims <- 100  # Number of simulations
+nSteps <- 2516  # Total number of steps for 2516 days
+startPrice <- msft_data$value[1]  # Starting value (first price in dataset)
+
 wieners <- matrix(0, nSims, nSteps + 1)  # +1 for initial price
 wieners[, 1] <- startPrice  # Set starting price
 
@@ -51,8 +55,7 @@ legend("topright", legend = c("Actual MSFT Data", "GBM Median Price"),
        col = c("blue", "darkgreen"), lwd = c(3, 2), lty = c(1, 1),
        bty = "n")
 
-# Print the median price and compare with the last 20 actual prices
-cat("Median of Last 20 MSFT Prices:", median_last_20_prices, "\n")
+# Print the median GBM price and compare with the last price
 cat("Median Price at t = Final from GBM:", median_price_at_t_final, "\n")
 
 # Print the Best Mu and Sigma
