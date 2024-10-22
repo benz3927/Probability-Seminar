@@ -18,7 +18,7 @@ last_price <- tail(msft_data[, 2], n = 1)
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu_gbm <- 0.253      # GBM Drift
+mu_gbm <- 0.25856      # GBM Drift
 sigma <- 0.272   # Volatility
 mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
 # Using Ito's Lemma
