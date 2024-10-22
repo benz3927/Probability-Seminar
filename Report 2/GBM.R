@@ -17,49 +17,7 @@ log_returns <- diff(log(msft_data$value))
 
 # Annualized volatility in 252 trading days
 sigma <- sd(log_returns) * sqrt(252)  
-
-# --- Setup for Grid Search ---
-mu_candidates <- seq(0.001, 1, by = 0.001)  # Candidate values for mu
-median_last_20_prices <- median(tail(msft_data$value, n = 20))  # Median of last 20 prices
-
-# --- Simulation Parameters ---
-nSims <- 100  # Number of simulations
-nSteps <- 2516  # Total number of steps for 2516 days
-startPrice <- msft_data$value[1]  # Starting value (first price in dataset)
-
-# Function for running GBM simulations
-run_simulation <- function(mu) {
-
-  wieners <- matrix(0, nSims, nSteps + 1)  # Initialize to zeros
-  wieners[, 1] <- startPrice  # Set the starting price
-  
-  for (i in 1:nSteps) {
-    wieners[, i + 1] <- wieners[, i] * (1 + mu / 252 + sigma * rnorm(nSims, 0, 1 / sqrt(252)))
-  }
-  
-  final_gbm_price <- median(wieners[, nSteps + 1])
-  diff <- abs(median_last_20_prices - final_gbm_price)
-  
-  return(c(mu, diff))  # Return mu and difference
-}
-
-# Set up parallel computing
-cl <- makeCluster(detectCores() - 1)  # Use all but one core
-clusterExport(cl, varlist = c("nSims", "nSteps", "startPrice", "sigma", "median_last_20_prices"))
-
-# Run simulations in parallel
-results <- parSapply(cl, mu_candidates, run_simulation)
-
-# Stop the cluster
-stopCluster(cl)
-
-# Find the best mu and minimum difference
-best_mu_index <- which.min(results[2, ])
-best_mu <- results[1, best_mu_index]
-min_diff <- results[2, best_mu_index]
-
-# --- Output the best mu and corresponding minimum difference ---
-cat("Best mu:", best_mu, "\n")
+mu <- 252*(mean(log_returns) + (1/2) * sd(log_returns)^2)
 
 # Parameters for hitting bounds
 upperLimit <- 450  # Upper hitting bound
@@ -71,9 +29,9 @@ wieners[, 1] <- startPrice  # Set starting price
 hitStep <- rep(0, nSims)  # Step on which the B.M. hits upper/lower
 hitValue <- rep(0, nSims)  # Which value was hit (upper/lower)
 
-# Generate Geometric Brownian motions with the best mu
+# Generate Geometric Brownian motions with our estimated mu
 for (i in 1:nSteps) {
-  wieners[, i + 1] <- wieners[, i] * (1 + best_mu / 252 + sigma * rnorm(nSims, 0, 1 / sqrt(252)))
+  wieners[, i + 1] <- wieners[, i] * (1 + mu / 252 + sigma * rnorm(nSims, 0, 1 / sqrt(252)))
   
   # Track hitting values and steps
   hitValue <- hitValue +
@@ -108,5 +66,5 @@ cat("Median of Last 20 MSFT Prices:", median_last_20_prices, "\n")
 cat("Median Price at t = Final from GBM:", median_price_at_t_final, "\n")
 
 # Print the Best Mu and Sigma
-cat("Best Mu:", best_mu, "\n")
+cat("Best Mu:", mu, "\n")
 cat("Sigma (Annualized Volatility):", sigma, "\n")
