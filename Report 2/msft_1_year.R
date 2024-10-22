@@ -21,7 +21,7 @@ abline(v = nRows, col = "black", lty = 2)
 
 # Parameters for Simulation
 S_0 <- tail(msft_data$value, 1)   # Starting price at end of actual data
-mu <- 0.253                       # Drift
+mu <- 0.258                       # Drift
 sigma <- 0.272                    # Estimated volatility
 nSims <- 100                      # Number of GBM simulations
 stepSize <- 1 / 252               # Daily time step (252 trading days in a year)
