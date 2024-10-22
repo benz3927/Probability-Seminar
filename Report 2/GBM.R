@@ -61,8 +61,7 @@ lines(msft_data$time_numeric, msft_data$value, col = "orange", lwd = 2)
 median_price_at_t_final <- median(wieners[, nSteps + 1])
 abline(h = median_price_at_t_final, col = "darkgreen", lwd = 2, lty = 1)
 
-# Print the median price and compare with the last 20 actual prices
-cat("Median of Last 20 MSFT Prices:", median_last_20_prices, "\n")
+# Plot the Median Price of the GBMs
 cat("Median Price at t = Final from GBM:", median_price_at_t_final, "\n")
 
 # Print the Best Mu and Sigma
