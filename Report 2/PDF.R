@@ -23,9 +23,9 @@ pdf_data <- pdf_data[!is.na(pdf_data$pdf) & pdf_data$pdf >= 0, ]  # Remove missi
 # Plot the PDF using ggplot2
 ggplot(pdf_data, aes(x = x, y = pdf)) +
   geom_line(color = "lightblue", size = 1.2) +
-  labs(title = expression(paste("PDF of MSFT Stock Price (GBM) in One Year")),
+  labs(title = expression(paste("PDF of MSFT in One Year (GBM Predictions)")),
        x = "Stock Price ($)",
-       y = expression(f[X](x))) +  # Updated y-axis label
+       y = expression(f[S](s))) +  # Updated y-axis label
   theme_minimal() +
   xlim(0, max(x) * 1.1) +  # Extend x-axis limit by 10%
   ylim(0, max(pdf_data$pdf, na.rm = TRUE) * 1.1) +  # Extend y-axis limit by 10%
