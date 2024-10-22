@@ -13,8 +13,8 @@ set.seed(2024)
 
 # --- Plot MSFT Data (2014-2024) ---
 plot(msft_data$time_numeric, msft_data$value, type = "l", col = rgb(0, 0, 0.5, 0.8), lwd = 1.5,
-     xlab = "Time (Days)", ylab = "Price ($)", main = "MSFT Price GBM Projections (2014-2026)",
-     xlim = c(1, nRows + 2 * 252), ylim = c(0, max(msft_data$value) * 1.5))
+     xlab = "Time (Days)", ylab = "Price ($)", main = "MSFT Price GBM Projections (2014-2025)",
+     xlim = c(1, nRows + 1 * 252), ylim = c(0, max(msft_data$value) * 1.5))
 
 # Add vertical line at the end of actual data
 abline(v = nRows, col = "black", lty = 2)
@@ -25,8 +25,8 @@ mu <- 0.258                       # Drift
 sigma <- 0.272                    # Estimated volatility
 nSims <- 100                      # Number of GBM simulations
 stepSize <- 1 / 252               # Daily time step (252 trading days in a year)
-totalTime <- 2                    # Projecting 2 years into the future
-nSteps <- ceiling(totalTime * 252)  # Total steps for simulation (2 years in days)
+totalTime <- 1                    # Projecting 1 year into the future
+nSteps <- ceiling(totalTime * 252)  # Total steps for simulation (1 year in days)
 
 # Initialize matrix for Brownian motions
 wieners <- matrix(S_0, nSims, nSteps + 1)
@@ -51,11 +51,11 @@ polygon(c(sim_time, rev(sim_time)),
         col = alpha("lightblue", 0.4), border = NA)
 
 # Plot bullish, bearish, and median paths (add lines to the existing plot)
-lines(sim_time, bullish_path, col = rgb(0, 0.5, 0, 0.7), lwd = 1)   # Dark green
-lines(sim_time, bearish_path, col = rgb(0.9, 0, 0, 0.7), lwd = 1)  # Dark red
-lines(sim_time, median_path, col = rgb(0, 0, 0.8, 0.7), lwd = 1)   # Muted blue
+lines(sim_time, bullish_path, col = rgb(0, 0.5, 0, 0.7), lwd = 1.5)   # Dark green
+lines(sim_time, bearish_path, col = rgb(0.9, 0, 0, 0.7), lwd = 1.5)  # Dark red
+lines(sim_time, median_path, col = rgb(0, 0, 0.8, 0.7), lwd = 1.5)   # Muted blue
 
 # Add legend
-legend("topleft", legend = c("MSFT Actual", "Bullish (75%)", "Bearish (25%)", "Median Path"),
+legend("topleft", legend = c("MSFT Actual", "Bullish (75% Quantile)", "Bearish (25% Quantile)", "Median Path"),
        col = c(rgb(0, 0, 0.5, 0.8), rgb(0, 0.5, 0, 0.7), rgb(0.9, 0, 0, 0.7), rgb(0, 0, 0.8, 0.7)), 
        lty = c(1, 1, 1, 1), lwd = 1)
