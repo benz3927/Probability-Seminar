@@ -1,5 +1,4 @@
 library(scales)
-library(parallel)
 
 #GBM Simulation from Professor Bowman Math 551 class
 # Set seed for overall script
