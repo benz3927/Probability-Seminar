@@ -1,0 +1,21 @@
+---
+title: "Microsoft"
+format: html
+editor: visual
+---
+
+## Microsoft
+
+```{r}
+library(tidyverse)
+# Load the readr package
+library(readr)
+
+# Read CSV from URL
+url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
+msft_data <- read_csv(url)
+
+# View the first few rows of the data
+head(msft_data)
+
+```
