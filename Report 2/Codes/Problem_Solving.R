@@ -24,7 +24,7 @@ mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
 # Using Ito's Lemma
 
 # Compute a and b for the problem (relative distances)
-# So that we can preserve a>0, b<0, S(0) -> 0
+# So that we can preserve a>0, b<0, S(0) maps to 0
 a <- log(S_upper) - log(S_0)  
 b <- log(S_lower) - log(S_0)
 
