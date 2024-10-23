@@ -59,5 +59,5 @@ legend("topright", legend = c("Actual MSFT Data", "GBM Median Price"),
 cat("Median Price at t = Final from GBM:", median_price_at_t_final, "\n")
 
 # Print the Best Mu and Sigma
-cat("Best Mu:", mu, "\n")
-cat("Sigma (Annualized Volatility):", sigma, "\n")
+cat("Mu (Historical Annual Drift:", mu, "\n")
+cat("Sigma (Annual Volatility):", sigma, "\n")
