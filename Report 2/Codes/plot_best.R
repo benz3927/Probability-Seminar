@@ -1,6 +1,6 @@
 library(scales)
 
-#GBM Simulation from Professor Bowman Math 551 class
+#GBM Simulation from Professor Bowman's Math 551 class
 # Set seed for overall script
 set.seed(2024)
 
