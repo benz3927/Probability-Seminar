@@ -24,6 +24,7 @@ mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
 # Using Ito's Lemma
 
 # Compute a and b for the problem (relative distances)
+# So that we can preserve a>0, b<0, S(0) -> 0
 a <- log(S_upper) - log(S_0)  
 b <- log(S_lower) - log(S_0)
 
@@ -42,10 +43,10 @@ S_current <- 416.06  # Current price
 S_lower <- 400       # Lower boundary ($400)
 
 # Compute the relative log distance for the lower boundary
-b <- log(S_current) - log(S_lower)  # Log distance for the lower boundary
+b <- log(S_lower) - log(S_current)  # Log distance for the lower boundary
 
 # Solve for a using the correct derived formula
-a <- (-sigma^2 / (2 * mu_bm)) * log(2 - exp((2 * mu_bm * b) / sigma^2))
+a <- (-sigma^2 / (2 * mu_bm)) * log(2 - exp(-(2 * mu_bm * b) / sigma^2))
 
 # Solve for x using the value of a
 x_upper <- S_current * exp(a)
@@ -57,7 +58,7 @@ cat("Value of x where there's an equal chance of dropping to $400 or rising to x
 
 # Given values for Question 3
 S_0 <- 416.06  # Current price of MSFT
-mu_gbm <- 0.258      # GBM Drift from Search
+mu_gbm <- mu_gbm
 sigma <- 0.272   # Volatility
 t <- 1         # Time in years
 
