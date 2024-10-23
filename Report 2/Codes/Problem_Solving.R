@@ -21,8 +21,10 @@ log_returns <- diff(log(msft_data$value))
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu_gbm <- 252*(mean(log_returns) + (1/2) * sd(log_returns)^2)  # GBM Drift
-sigma <-  sd(log_returns) * sqrt(252) # Volatility
+# GBM Drift Estimation
+mu_gbm <- round(252*(mean(log_returns) + (1/2) * sd(log_returns)^2), 5) 
+# GBM Annual Volatility Estimation
+sigma <-  round(sd(log_returns) * sqrt(252), 5) 
 mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
 # Using Ito's Lemma
 
@@ -69,5 +71,5 @@ t <- 1         # Time in years
 expected_value <- S_0 * exp(mu_gbm * t)
 
 # Print the expected value result
-cat(sprintf("For S_0 = %.3f, mu = %.3f, sigma = %.3f, t = %.3f:\n", S_0, mu_gbm, sigma, t))
+cat(sprintf("For S_0 = %.2f, mu = %.5f, sigma = %.5f, t = %1.f:\n", S_0, mu_gbm, sigma, t))
 cat(sprintf("Expected Value E[X_t] = %.2f\n", expected_value))
