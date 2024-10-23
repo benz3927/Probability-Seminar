@@ -13,13 +13,16 @@ print(head(msft_data))  # Print the first few rows of the data
 first_price <- head(msft_data[, 2], n = 1)
 last_price <- tail(msft_data[, 2], n = 1)
 
+# Calculate log returns
+log_returns <- diff(log(msft_data$value))  
+
 # --- Question 1: Probability of hitting $20 before $416.06 ---
 # Parameters
 S_0 <- 45.53    # Initial price (starting price MSFT)
 S_lower <- 20   # Lower boundary ($20)
 S_upper <- 416.06  # Upper boundary ($416.06)
-mu_gbm <- 0.25856      # GBM Drift
-sigma <- 0.272   # Volatility
+mu_gbm <- 252*(mean(log_returns) + (1/2) * sd(log_returns)^2)  # GBM Drift
+sigma <-  sd(log_returns) * sqrt(252) # Volatility
 mu_bm <- mu_gbm - sigma^2/2 # Mu of BM with Drift converted from GBM Drift
 # Using Ito's Lemma
 
@@ -59,7 +62,7 @@ cat("Value of x where there's an equal chance of dropping to $400 or rising to x
 # Given values for Question 3
 S_0 <- 416.06  # Current price of MSFT
 mu_gbm <- mu_gbm
-sigma <- 0.272   # Volatility
+sigma <- sigma   # Volatility
 t <- 1         # Time in years
 
 # Calculate expected value
