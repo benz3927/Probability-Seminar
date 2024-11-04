@@ -2,30 +2,29 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Step 1: Read the CSV file from the URL
+# Read the CSV file from the URL
 url = "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/Report%202/msft.csv"
 df = pd.read_csv(url)
 
-# Step 2: Display the first few rows of the dataframe
+# Display the first few rows of the dataframe
 print("First few rows of the dataframe:")
 print(df.head())
 
-# Step 3: Display the column names
+# Display the column names
 print("\nColumn names in the DataFrame:")
 print(df.columns)
 
-# Step 4: Check for missing values
+# Check for missing values
 missing_values = df.isnull().sum()
 print("\nMissing values in each column:")
 print(missing_values)
 
-# Step 5: Ensure the 'date' column is of datetime type
 df['date'] = pd.to_datetime(df['date'])
 
 # Set the date as the index
 df.set_index('date', inplace=True)
 
-# Step 6: Plot the Closing Prices using the 'value' column
+# Plot the Closing Prices using the 'value' column
 plt.figure(figsize=(12, 6))
 plt.plot(df['value'], label='Closing Price', color='blue')
 plt.title('Microsoft Stock Closing Prices')
@@ -35,15 +34,15 @@ plt.legend()
 plt.grid()
 # plt.show()
 
-# Step 7: Calculate and display basic statistics
+# Calculate and display basic statistics
 statistics = df.describe()
 print("\nBasic statistics of the dataframe:")
 print(statistics)
 
-# Step 8: Calculate daily returns
+# Calculate daily returns
 df['Daily Return'] = df['value'].pct_change()
 
-# Step 9: Plotting daily returns
+# Plotting daily returns
 plt.figure(figsize=(12, 6))
 plt.plot(df['Daily Return'], label='Daily Returns', color='orange')
 plt.title('Microsoft Stock Daily Returns')
@@ -56,10 +55,10 @@ plt.grid()
 import numpy as np
 import math
 
-# Step 10: Calculate log returns
+# Calculate log returns
 df['Log Return'] = np.log(df['value'] / df['value'].shift(1))
 
-# Step 11: Calculate mean and standard deviation (sigma) of log returns
+# Calculate mean and standard deviation (sigma) of log returns
 mean_log_return = df['Log Return'].mean()
 sigma_log_return = df['Log Return'].std()
 
