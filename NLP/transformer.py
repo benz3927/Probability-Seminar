@@ -1,47 +1,52 @@
-import subprocess
-import sys
+from transformers import BertTokenizer, BertForMaskedLM, Trainer, TrainingArguments
 
-# Install necessary libraries
-subprocess.check_call([sys.executable, "-m", "pip", "install", "gensim", "nltk", "requests"])
+# Load tokenizer and model
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 
-# Now import the necessary libraries
-import nltk
-import gensim
-import numpy as np
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from gensim.models import Word2Vec
+# Example of loading data from a URL (using requests or another method)
 import requests
-
-# Download Moby Dick text
 url = "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/NLP/moby.txt"
 response = requests.get(url)
-moby_text = response.text
+data = response.text
 
-# Preprocess the text: Tokenization, removing stopwords, and punctuation
-nltk.download('punkt')
-nltk.download('stopwords')
+# Tokenize the data
+inputs = tokenizer(data, return_tensors="pt", truncation=True, padding=True)
 
-# Tokenizing and cleaning the text
-tokens = word_tokenize(moby_text.lower())  # Lowercase and tokenize
-tokens = [word for word in tokens if word.isalpha()]  # Remove punctuation
-stop_words = set(stopwords.words('english'))
-tokens = [word for word in tokens if word not in stop_words]  # Remove stopwords
+# Ensure that input_ids, attention_mask, and token_type_ids are provided
+print(inputs)  # Check your inputs format
 
-# Create and train a Word2Vec model on the tokens
-model = Word2Vec([tokens], vector_size=100, window=5, min_count=1, workers=4)
+# Continue with your trainer setup
+training_args = TrainingArguments(
+    output_dir='./results',
+    evaluation_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=16,
+    num_train_epochs=3,
+)
 
-# Get the embeddings for "ocean" and "sea"
-embedding_ocean = model.wv['ocean']
-embedding_sea = model.wv['sea']
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=inputs,  # Use the tokenized dataset
+    eval_dataset=inputs,   # Add evaluation dataset if needed
+)
 
-# Cosine similarity function
-def cosine_similarity(vec1, vec2):
-    dot_product = np.dot(vec1, vec2)
-    norm1 = np.linalg.norm(vec1)
-    norm2 = np.linalg.norm(vec2)
-    return dot_product / (norm1 * norm2)
+trainer.train()
 
-# Calculate the similarity between "sea" and "ocean"
-similarity_score = cosine_similarity(embedding_ocean, embedding_sea)
-print(f"Cosine similarity between 'sea' and 'ocean': {similarity_score}")
+from transformers import BertForMaskedLM, BertTokenizer
+import torch
+
+# Sample input
+inputs = tokenizer(data, return_tensors="pt", truncation=True, padding=True)
+input_ids = inputs['input_ids']
+attention_mask = inputs['attention_mask']
+
+# Forward pass
+outputs = model(input_ids, attention_mask=attention_mask, labels=input_ids)
+
+# Loss and logits
+loss = outputs.loss
+logits = outputs.logits
+
+print(loss)
