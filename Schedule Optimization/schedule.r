@@ -1,296 +1,84 @@
-##----------------------------------------------------------------------
-## EVERYTHING YOU NEED TO CHANGE IS IN THIS SECTION OR THE FINAL SECTION
+# Load libraries
+library(quanteda)
+require(readtext)
+library(data.table)
 
-# Number of doctors available
-ndoctors <- 10
+# Read the text file from the URL
+url <- "https://raw.githubusercontent.com/benz3927/Probability-Seminar/refs/heads/main/NLP/moby.txt"
+dat_txtone <- readtext(url)
 
-# Number of nurses
-nnurses <- 15
+# Split into tokens (words)
+toks <- tokens(tolower(dat_txtone$text), remove_punct = TRUE) |>
+  tokens_split(separator = "—")
 
-# Number of days in the schedule
-ndays <- 7
+# Create list of all 4-grams in the book
+ngrams <- tokens_ngrams(toks, n = 4, concatenator = "_")
 
-# Number of staff present for each shift (must have same # of shifts)
-# e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
-doctorstaffing <- c(2, 2, 2)
-nursestaffing <- c(3, 3, 3)
+# Words to compare
+A <- "sea"
+B <- "ocean"
 
-# Penalties for violating each of six constraints
-# Penalty 1: Each instance of three consecutive shifts (including overnight)
-# Penalty 2: Each person who does not have two days off AT ALL
-# Penalty 3: Each person who does not have two days off IN A ROW
-# Penalty 4: Each instance of first shift following last shift on prev day
-# Penalty 5: Each instance of working both weekend days (days 1, 2)
-# Penalty 6: Weights for the stdev of nurses'/doctors' shifts in the schedule
-#            (trying to make everyone work similar amounts)
-penalties <- c(100, 100, 0.5, 5, 1, 2)
+# Initialize total absolute differences
+totalabsdiff_A <- 0
+totalabsdiff_B <- 0  # Make sure this is initialized
 
-# Number of iterations (if too small, might not be able to explore enough)
-niter <- 50000
+# Look for instances of any three words followed by word A
+predictiontext <- tokens_select(ngrams, pattern = phrase(paste0("*_", A)))
+y <- predictiontext[[1]]
 
-# The cooling schedule: what should the temperature be at step i out of n
-coolingschedule <- function(i,n)
-{
-  # If you want greedy optimization, just fix some low temperature
-  #return(1e-3)
+# Calculate total absolute difference for occurrences of word A
+for (i in 1:length(y)) {
+  print(i)
   
-  # Linear cooling schedule from 1 down to 0
-  return(1 - (i/(n+1)))
+  # Find all times in the text where the first three words appear
+  phrasetofind <- sub("_[^_]+$", "", y[i])
+  occurrences <- tokens_select(ngrams, pattern = phrase(paste0(phrasetofind, "*")))
   
-  # Logarithmic cooling schedule (goes down really slowly,
-  # choose constant to make sure the temp gets low enough)
-  #return(0.02/log(1+(i+1)/n))
-}
-
-## END OF PARAMETER SECTION
-##----------------------------------------------------------------------
-
-# (Some things which are calculated automatically)
-doctorindices <- c(1,cumsum(doctorstaffing)+1)
-nurseindices <- c(1,cumsum(nursestaffing)+1)
-nshifts <- length(doctorstaffing)
-
-# Function to calculate the "energy" (total cost of violations)
-get_energy <- function(doctorsunwrapped, nursesunwrapped, penalties)
-{
-  return(get_energy_sub(doctorsunwrapped,penalties)+
-           get_energy_sub(nursesunwrapped,penalties))
-}
-
-# ...calculates the energy contribution from doctors & nurses separately
-get_energy_sub <- function(subsched, penalties)
-{
-  energy <- 0
+  # Probability of A following the phrase
+  z <- table(occurrences[[1]])
+  count_A <- z[y[i]]
+  prob_A <- count_A / length(occurrences[[1]])
   
-  # Array to keep track of total number of shifts worked by each worker
-  totshift <- rep(0, dim(subsched)[1])
-  
-  # Go through the schedule worker by worker...
-  for (i in 1:dim(subsched)[1])
-  {
-    # Count number of shifts for that worker
-    totshift[i] <- sum(subsched[i,,])
-    
-    # Look at whether worker works the last shift on the last day
-    lastshift <- subsched[i,ndays,nshifts]
-    
-    # Look at whether worker has the last day off
-    prevoff <- all(subsched[i,ndays,] == FALSE)
-    
-    daysoff <- 0
-    twoinarow <- 1
-    
-    # If worked the very last shift, did you work the shift before as well?
-    #  (looking to capture three shifts in a row wrapping around week to week)
-    if (lastshift == 1)
-    {
-      lastshift <- lastshift + subsched[i,ndays,nshifts-1]
-    }
-    
-    # For each day in the schedule...
-    for (j in 1:ndays)
-    {
-      # If you have the day off, count it;
-      #  if the previous day was also off, satisfy "two days off in a row"
-      if (all(subsched[i,j,] == FALSE))
-      {
-        daysoff <- daysoff + 1
-        if (prevoff)
-        {
-          twoinarow <- 0
-        }
-        prevoff <- TRUE
-      }
-      else # specifically on the second day, if you worked today and yesterday,
-      { # that's a penalty (treating first two days as the weekend)
-        if (!prevoff && j == 2)
-        {
-          energy <- energy + penalties[5]
-        }
-        prevoff <- FALSE
-      }
-      # Now check for wraparound shift streaks and assess penalties
-      if (subsched[i,j,1] == 1)
-      {
-        lastshift <- lastshift + 1
-        if (lastshift > 1)
-        {
-          energy <- energy + penalties[4]
-        }
-        if (lastshift > 2)
-        {
-          energy <- energy + penalties[1]
-        }
-      }
-      else
-      {
-        lastshift <- 0
-      }
-      # Once that is done, move through the remaining shifts, assessing penalties
-      for (k in 2:nshifts)
-      {
-        if (subsched[i,j,k] == 1)
-        {
-          lastshift <- lastshift + 1
-          if (lastshift > 2)
-          {
-            energy <- energy + penalties[1]
-          }
-        }
-        else
-        {
-          lastshift <- 0
-        }
-      }
-    }
-    # After finishing the week, assess penalties related to days off
-    energy <- energy + twoinarow * penalties[3] + (daysoff < 2) * penalties[2]
+  # Probability of B following the phrase
+  count_B <- z[paste0(phrasetofind, "_", B)]
+  if (is.na(count_B)) {
+    count_B <- 0
   }
+  prob_B <- count_B / length(occurrences[[1]])
   
-  # Penalize energy according to standard deviation among shifts
-  energy <- energy + penalties[6] * sd(totshift)
-  return(energy)
+  # Calculate and sum the absolute difference
+  probdiff_A <- abs(prob_A - prob_B)
+  totalabsdiff_A <- totalabsdiff_A + probdiff_A
 }
 
-# Initial point: put people into the schedule in numerical order each day
-totalspots <- ndays * sum(doctorstaffing)
-initialloop <- rep(1:ndoctors, ceiling(totalspots/ndoctors))
-doctorschedule <- matrix(initialloop[1:totalspots], nrow = sum(doctorstaffing), ncol = ndays)
-totalspots <- ndays * sum(nursestaffing)
-initialloop <- rep(1:nnurses, ceiling(totalspots/nnurses))
-nurseschedule <- matrix(initialloop[1:totalspots], nrow = sum(nursestaffing), ncol = ndays)
+# Now do the same with occurrences where word B is the fourth word in the n-grams
+predictiontext_B <- tokens_select(ngrams, pattern = phrase(paste0("*_", B)))
+y_B <- predictiontext_B[[1]]
 
-# Fill in the "unwrapped" schedules (separate schedule for each worker)
-doctorsunwrapped <- array(0, c(ndoctors,ndays,nshifts))
-for (i in 1:ndays)
-{
-  for (j in 1:nshifts)
-  {
-    for (k in doctorindices[j]:(doctorindices[j+1]-1))
-    {
-      doctorsunwrapped[doctorschedule[k,i],i,j] <- 1
-    }
-  }
-}
-
-nursesunwrapped <- array(0, c(nnurses,ndays,nshifts))
-for (i in 1:ndays)
-{
-  for (j in 1:nshifts)
-  {
-    for (k in nurseindices[j]:(nurseindices[j+1]-1))
-    {
-      nursesunwrapped[nurseschedule[k,i],i,j] <- 1
-    }
-  }
-}
-
-# Starting energy...
-energy <- rep(0,niter)
-energy[1] <- get_energy(doctorsunwrapped, nursesunwrapped, penalties)
-
-# Now run the Gibbs sampler.
-for (i in 2:niter)
-{
-  # Current temperature (from our cooling schedule)
-  temperature <- coolingschedule(i,niter)
+for (i in 1:length(y_B)) {
+  print(i)
   
-  # Flip a coin to switch either a doctor or a nurse shift.
-  if (runif(1) < 0.5)
-  {
-    # Choose a random shift
-    prop <- doctorschedule
-    posx <- sample(1:sum(doctorstaffing),1)
-    posy <- sample(1:ndays,1)
-    
-    # Calculate which workers are available to swap into that shift and pick one
-    available <- 1:ndoctors
-    myblock <- min(which(doctorindices>posx))-1
-    for (j in doctorindices[myblock]:(doctorindices[myblock+1]-1))
-    {
-      if (j != posx)
-      {
-        available <- setdiff(available, doctorschedule[j,posy])
-      }
-    }
-    prop[posx,posy] <- sample(available,1)
-    propunwrapped <- doctorsunwrapped
-    propunwrapped[doctorschedule[posx,posy],posy,myblock] <- 0
-    propunwrapped[prop[posx,posy],posy,myblock] <- 1
-    
-    # Calculate energy of new configuration
-    new_energy <- get_energy(propunwrapped, nursesunwrapped, penalties)
-    
-    # With the appropriate probability, update state/energy
-    if(runif(1) < exp((energy[i-1]-new_energy)/temperature))
-    {
-      energy[i] <- new_energy
-      doctorschedule <- prop
-      doctorsunwrapped <- propunwrapped
-    }
-    else # otherwise, leave things as they stand.
-    {
-      energy[i] <- energy[i-1]
-    }
-  }
-  else # same as above, but if you are swapping a nurse
-  {
-    prop <- nurseschedule
-    posx <- sample(1:sum(nursestaffing),1)
-    posy <- sample(1:ndays,1)
-    available <- 1:nnurses
-    myblock <- min(which(nurseindices>posx))-1
-    for (j in nurseindices[myblock]:(nurseindices[myblock+1]-1))
-    {
-      if (j != posx)
-      {
-        available <- setdiff(available, nurseschedule[j,posy])
-      }
-    }
-    prop[posx,posy] <- sample(available,1)
-    
-    propunwrapped <- nursesunwrapped
-    propunwrapped[nurseschedule[posx,posy],posy,myblock] <- 0
-    propunwrapped[prop[posx,posy],posy,myblock] <- 1
-    
-    new_energy <- get_energy(doctorsunwrapped, propunwrapped, penalties)
+  # Find all times in the text where the first three words appear
+  phrasetofind <- sub("_[^_]+$", "", y_B[i])
+  occurrences <- tokens_select(ngrams, pattern = phrase(paste0(phrasetofind, "*")))
   
-    if(runif(1) < exp((energy[i-1]-new_energy)/temperature))
-    {
-      energy[i] <- new_energy
-      nurseschedule <- prop
-      nursesunwrapped <- propunwrapped
-    }
-    else
-    {
-      energy[i] <- energy[i-1]
-    }
+  # Probability of B following the phrase
+  z <- table(occurrences[[1]])
+  count_B <- z[y_B[i]]
+  prob_B <- count_B / length(occurrences[[1]])
+  
+  # Probability of A following the phrase
+  count_A <- z[paste0(phrasetofind, "_", A)]
+  if (is.na(count_A)) {
+    count_A <- 0
   }
+  prob_A <- count_A / length(occurrences[[1]])
+  
+  # Calculate and sum the absolute difference
+  probdiff_B <- abs(prob_B - prob_A)
+  totalabsdiff_B <- totalabsdiff_B + probdiff_B
 }
 
-##----------------------------------------------------------------------
-## EVERYTHING YOU NEED TO CHANGE IS IN THIS SECTION OR THE FIRST SECTION
-
-# Various things you might want to look at:
-
-# Plotting the energy over time
-plot(energy)
-
-# What was the lowest energy? (Is this necessarily the energy of the final state?)
-min(energy)
-
-# Check out our final schedule.
-#  The columns are days. If there are three shifts of 2 workers,
-#  the first 2 rows are shift 1, the next 2 rows are shift 2, etc.
-#  Numbers in table correspond to workers. 1, 2, 3, ...
-print(doctorschedule)
-print(nurseschedule)
-
-# If you want to look at an individual person's schedule,
-#  check the "unwrapped" matrices. For example,
-#  the shift schedule for doctor 3 is below; rows are days,
-#  columns are shifts, 1 = working, 0 not working
-print(doctorsunwrapped[3,,])
-
-## END OF FINAL SECTION
-##----------------------------------------------------------------------
+# Print total absolute differences
+cat("Total absolute difference for occurrences of word A:", totalabsdiff_A, "\n")
+cat("Total absolute difference for occurrences of word B:", totalabsdiff_B, "\n")
