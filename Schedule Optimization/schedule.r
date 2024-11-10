@@ -2,10 +2,10 @@
 ## EVERYTHING YOU NEED TO CHANGE IS IN THIS SECTION OR THE FINAL SECTION
 
 # Number of doctors available
-ndoctors <- 10
+ndoctors <- 7
 
 # Number of nurses
-nnurses <- 15
+nnurses <- 10
 
 # Number of days in the schedule
 ndays <- 7
