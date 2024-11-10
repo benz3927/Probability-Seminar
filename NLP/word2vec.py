@@ -67,5 +67,4 @@ if word1 in model.wv and word2 in model.wv:
     print(f"Cosine similarity between '{word1}' and '{word2}':", similarity_score)
 else:
     print(f"One or both of the words '{word1}' and '{word2}' are not in the vocabulary.")
-
-model.wv.similarity(word1, word2)
+print(model.wv.similarity(word1, word2))
