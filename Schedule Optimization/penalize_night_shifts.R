@@ -12,8 +12,8 @@ ndays <- 7
 
 # Number of staff present for each shift (must have same # of shifts)
 # e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
-doctorstaffing <- c(2, 2, 2, 2, 2)
-nursestaffing <- c(3, 3, 3, 3, 3)
+doctorstaffing <- c(2, 2, 2)
+nursestaffing <- c(3, 3, 3)
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of three consecutive shifts (including overnight)
@@ -299,8 +299,8 @@ ndays <- 7
 
 # Number of staff present for each shift (must have same # of shifts)
 # e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
-doctorstaffing <- c(2, 2, 2, 2, 2)
-nursestaffing <- c(3, 3, 3, 3, 3)
+doctorstaffing <- c(2, 2, 2)
+nursestaffing <- c(3, 3, 3)
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of three consecutive shifts (including overnight)
@@ -586,8 +586,8 @@ ndays <- 7
 
 # Number of staff present for each shift (must have same # of shifts)
 # e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
-doctorstaffing <- c(2, 2, 2, 2, 2)
-nursestaffing <- c(3, 3, 3, 3, 3)
+doctorstaffing <- c(2, 2, 2)
+nursestaffing <- c(3, 3, 3)
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of three consecutive shifts (including overnight)
@@ -871,8 +871,8 @@ ndays <- 7
 
 # Number of staff present for each shift (must have same # of shifts)
 # e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
-doctorstaffing <- c(2, 2, 2, 2, 2)
-nursestaffing <- c(3, 3, 3, 3, 3)
+doctorstaffing <- c(2, 2, 2)
+nursestaffing <- c(3, 3, 3)
 
 # Penalties for violating each of six constraints
 penalties <- c(100, 100, 0.5, 5, 1, 2, 30)
