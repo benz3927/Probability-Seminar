@@ -273,48 +273,24 @@ for (i in 2:niter)
 
 # Various things you might want to look at:
 
+# Plotting the energy over time
+plot(energy)
 
-# Define schedules
-sigmoid_cooling <- function(i, n) {
-  steepness <- 12  # Adjust steepness of sigmoid
-  midpoint <- n / 2  # Midpoint of the iterations
-  return(1 / (1 + exp(steepness * (i - midpoint) / n)))
-}
+# What was the lowest energy? (Is this necessarily the energy of the final state?)
+min(energy)
 
-linear_reheat_negative <- function(i, n, T_start = 1, T_end = 0.1) {
-  return(T_start - (T_start - T_end) * (i / n))
-}
+# Check out our final schedule.
+#  The columns are days. If there are three shifts of 2 workers,
+#  the first 2 rows are shift 1, the next 2 rows are shift 2, etc.
+#  Numbers in table correspond to workers. 1, 2, 3, ...
+print(doctorschedule)
+print(nurseschedule)
 
-# Simulated energy trajectory
-simulate_energy <- function(cooling_schedule, niter, color) {
-  energy <- numeric(niter)
-  energy[1] <- 500  # Initial energy value
-  
-  for (i in 2:niter) {
-    temp <- cooling_schedule(i, niter)
-    proposed_energy <- energy[i - 1] - rnorm(1, mean = 5, sd = 2)
-    delta <- proposed_energy - energy[i - 1]
-    if (runif(1) < exp(-delta / temp)) {
-      energy[i] <- proposed_energy
-    } else {
-      energy[i] <- energy[i - 1]
-    }
-  }
-  
-  lines(energy, col = color, lwd = 2)
-}
+# If you want to look at an individual person's schedule,
+#  check the "unwrapped" matrices. For example,
+#  the shift schedule for doctor 3 is below; rows are days,
+#  columns are shifts, 1 = working, 0 not working
+print(doctorsunwrapped[3,,])
 
-# Plot setup
-niter <- 50000
-plot(1, type = "n", xlim = c(1, niter), ylim = c(0, 500),
-     main = "Energy Over Time",
-     xlab = "Iteration", ylab = "Energy")
-
-# Simulate sigmoid cooling
-simulate_energy(sigmoid_cooling, niter, "blue")
-
-# Simulate linear reheating
-simulate_energy(linear_reheat_negative, niter, "red")
-
-legend("topright", legend = c("Sigmoid Cooling", "Linear Reheating"),
-       col = c("blue", "red"), lwd = 2)
+## END OF FINAL SECTION
+##----------------------------------------------------------------------
