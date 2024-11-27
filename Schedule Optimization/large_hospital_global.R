@@ -33,10 +33,10 @@ nursestaffing <- c(12, 8)
 # Penalty 6: Weights for the stdev of nurses'/doctors' shifts in the schedule
 #            (trying to make everyone work similar amounts)
 #Penalty 7: Each instance of exceeding three night shifts/week
-penalties <- c(100, 100, 0.5, 5, 1, 2, 70)
+penalties <- c(100, 100, 0.5, 5, 1, 2, 50)
 
 # Number of iterations (if too small, might not be able to explore enough)
-niter <- 50000
+niter <- 30000
 
 # The cooling schedule: what should the temperature be at step i out of n
 coolingschedule <- function(i,n)
