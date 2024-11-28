@@ -21,8 +21,9 @@ ndays <- 7
 # 1 doctor : 2 nurses or fewer at all times
 # 14-19: 16 patients per 12 hour shift
 # Ideal
-doctorstaffing <- c(6, 4)
-nursestaffing <- c(12, 8)
+# Two 12-hour shifts per day (Day and Night)
+doctorstaffing <- c(35, 40)  # Night, Day
+nursestaffing <- c(70, 80)  # Night, Day
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of two consecutive shifts (including overnight)
@@ -36,7 +37,7 @@ nursestaffing <- c(12, 8)
 penalties <- c(100, 100, 0.5, 5, 1, 2, 10)
 
 # Number of iterations (if too small, might not be able to explore enough)
-niter <- 30000
+niter <- 50000
 
 # The cooling schedule: what should the temperature be at step i out of n
 coolingschedule <- function(i,n)
