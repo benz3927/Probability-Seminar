@@ -31,7 +31,7 @@ nursestaffing <- c(8, 8, 8)
 # Penalty 6: Weights for the stdev of nurses'/doctors' shifts in the schedule
 #            (trying to make everyone work similar amounts)
 #Penalty 7: Each instance of exceeding three night shifts/week
-penalties <- c(100, 100, 0.5, 5, 1, 2, 30)
+penalties <- c(100, 100, 0.5, 5, 1, 2, 50)
 
 # Number of iterations (if too small, might not be able to explore enough)
 niter <- 50000
@@ -80,7 +80,7 @@ get_energy_sub <- function(subsched, penalties) {
     
     # Penalize if worker exceeds the max number of night shifts allowed (penalize each night shift over the limit)
     if (night_shifts[i] > max_night_shifts_allowed) {
-      energy <- energy + penalties[6] * (night_shifts[i] - max_night_shifts_allowed)
+      energy <- energy + penalties[7] * (night_shifts[i] - max_night_shifts_allowed)
     }
     
     # Check the last shift and whether worker has the last day off
@@ -329,94 +329,6 @@ get_energy <- function(doctorsunwrapped, nursesunwrapped, penalties)
            get_energy_sub(nursesunwrapped,penalties))
 }
 
-# ...calculates the energy contribution from doctors & nurses separately
-
-# Energy calculation for doctors and nurses
-get_energy_sub <- function(subsched, penalties) {
-  max_night_shifts_allowed = 3
-  energy <- 0
-  
-  # Array to keep track of total number of shifts worked by each worker
-  totshift <- rep(0, dim(subsched)[1])
-  
-  # Array to keep track of the number of night shifts worked by each worker
-  night_shifts <- rep(0, dim(subsched)[1])
-  
-  # Loop through each worker
-  for (i in 1:dim(subsched)[1]) {
-    # Count total shifts and night shifts for the current worker
-    totshift[i] <- sum(subsched[i,,])
-    night_shifts[i] <- sum(subsched[i,,] == 1)
-    
-    # Penalize if worker exceeds the max number of night shifts allowed (penalize each night shift over the limit)
-    if (night_shifts[i] > max_night_shifts_allowed) {
-      energy <- energy + penalties[6] * (night_shifts[i] - max_night_shifts_allowed)
-    }
-    
-    # Check the last shift and whether worker has the last day off
-    lastshift <- subsched[i, ndays, nshifts]
-    prevoff <- all(subsched[i, ndays,] == FALSE)
-    
-    daysoff <- 0
-    twoinarow <- 1  # Variable for tracking consecutive days off
-    
-    # Check for consecutive shifts across weeks and days off in a row
-    if (lastshift == 1) {
-      lastshift <- lastshift + subsched[i, ndays, nshifts - 1]  # Check if last shift is consecutive to the previous week
-    }
-    
-    # Loop through each day in the schedule
-    for (j in 1:ndays) {
-      # If the worker has the day off, check if it satisfies "two days off in a row" condition
-      if (all(subsched[i, j,] == FALSE)) {
-        daysoff <- daysoff + 1
-        if (prevoff) {
-          twoinarow <- 0  # No consecutive off days if previous day was also off
-        }
-        prevoff <- TRUE
-      } else {
-        # If worker worked on the second day of a weekend-like schedule, penalize
-        if (!prevoff && j == 2) {
-          energy <- energy + penalties[5]
-        }
-        prevoff <- FALSE
-      }
-      
-      # Check for wraparound shift streaks and assess penalties
-      if (subsched[i, j, 1] == 1) {
-        lastshift <- lastshift + 1
-        if (lastshift > 1) {
-          energy <- energy + penalties[4]
-        }
-        if (lastshift > 2) {
-          energy <- energy + penalties[1]
-        }
-      } else {
-        lastshift <- 0  # Reset if no shift worked
-      }
-      
-      # Loop through remaining shifts in the day
-      for (k in 2:nshifts) {
-        if (subsched[i, j, k] == 1) {
-          lastshift <- lastshift + 1
-          if (lastshift > 2) {
-            energy <- energy + penalties[1]
-          }
-        } else {
-          lastshift <- 0  # Reset for non-working shifts
-        }
-      }
-    }
-    
-    # After finishing the week, assess penalties related to days off
-    energy <- energy + twoinarow * penalties[3] + (daysoff < 2) * penalties[2]
-  }
-  
-  # Penalize energy according to standard deviation among shifts
-  energy <- energy + penalties[6] * sd(totshift)
-  
-  return(energy)
-}
 
 # Initial point: put people into the schedule in numerical order each day
 totalspots <- ndays * sum(doctorstaffing)
@@ -592,93 +504,6 @@ get_energy <- function(doctorsunwrapped, nursesunwrapped, penalties)
 {
   return(get_energy_sub(doctorsunwrapped,penalties)+
            get_energy_sub(nursesunwrapped,penalties))
-}
-
-# ...calculates the energy contribution from doctors & nurses separately
-get_energy_sub <- function(subsched, penalties) {
-  max_night_shifts_allowed = 3
-  energy <- 0
-  
-  # Array to keep track of total number of shifts worked by each worker
-  totshift <- rep(0, dim(subsched)[1])
-  
-  # Array to keep track of the number of night shifts worked by each worker
-  night_shifts <- rep(0, dim(subsched)[1])
-  
-  # Loop through each worker
-  for (i in 1:dim(subsched)[1]) {
-    # Count total shifts and night shifts for the current worker
-    totshift[i] <- sum(subsched[i,,])
-    night_shifts[i] <- sum(subsched[i,,] == 1)
-    
-    # Penalize if worker exceeds the max number of night shifts allowed (penalize each night shift over the limit)
-    if (night_shifts[i] > max_night_shifts_allowed) {
-      energy <- energy + penalties[6] * (night_shifts[i] - max_night_shifts_allowed)
-    }
-    
-    # Check the last shift and whether worker has the last day off
-    lastshift <- subsched[i, ndays, nshifts]
-    prevoff <- all(subsched[i, ndays,] == FALSE)
-    
-    daysoff <- 0
-    twoinarow <- 1  # Variable for tracking consecutive days off
-    
-    # Check for consecutive shifts across weeks and days off in a row
-    if (lastshift == 1) {
-      lastshift <- lastshift + subsched[i, ndays, nshifts - 1]  # Check if last shift is consecutive to the previous week
-    }
-    
-    # Loop through each day in the schedule
-    for (j in 1:ndays) {
-      # If the worker has the day off, check if it satisfies "two days off in a row" condition
-      if (all(subsched[i, j,] == FALSE)) {
-        daysoff <- daysoff + 1
-        if (prevoff) {
-          twoinarow <- 0  # No consecutive off days if previous day was also off
-        }
-        prevoff <- TRUE
-      } else {
-        # If worker worked on the second day of a weekend-like schedule, penalize
-        if (!prevoff && j == 2) {
-          energy <- energy + penalties[5]
-        }
-        prevoff <- FALSE
-      }
-      
-      # Check for wraparound shift streaks and assess penalties
-      if (subsched[i, j, 1] == 1) {
-        lastshift <- lastshift + 1
-        if (lastshift > 1) {
-          energy <- energy + penalties[4]
-        }
-        if (lastshift > 2) {
-          energy <- energy + penalties[1]
-        }
-      } else {
-        lastshift <- 0  # Reset if no shift worked
-      }
-      
-      # Loop through remaining shifts in the day
-      for (k in 2:nshifts) {
-        if (subsched[i, j, k] == 1) {
-          lastshift <- lastshift + 1
-          if (lastshift > 2) {
-            energy <- energy + penalties[1]
-          }
-        } else {
-          lastshift <- 0  # Reset for non-working shifts
-        }
-      }
-    }
-    
-    # After finishing the week, assess penalties related to days off
-    energy <- energy + twoinarow * penalties[3] + (daysoff < 2) * penalties[2]
-  }
-  
-  # Penalize energy according to standard deviation among shifts
-  energy <- energy + penalties[6] * sd(totshift)
-  
-  return(energy)
 }
 
 # Initial point: put people into the schedule in numerical order each day
@@ -857,94 +682,6 @@ get_energy <- function(doctorsunwrapped, nursesunwrapped, penalties) {
            get_energy_sub(nursesunwrapped, penalties))
 }
 
-# Energy calculation for doctors and nurses
-
-# Energy calculation for doctors and nurses
-get_energy_sub <- function(subsched, penalties) {
-  max_night_shifts_allowed = 3
-  energy <- 0
-  
-  # Array to keep track of total number of shifts worked by each worker
-  totshift <- rep(0, dim(subsched)[1])
-  
-  # Array to keep track of the number of night shifts worked by each worker
-  night_shifts <- rep(0, dim(subsched)[1])
-  
-  # Loop through each worker
-  for (i in 1:dim(subsched)[1]) {
-    # Count total shifts and night shifts for the current worker
-    totshift[i] <- sum(subsched[i,,])
-    night_shifts[i] <- sum(subsched[i,,] == 1)
-    
-    # Penalize if worker exceeds the max number of night shifts allowed (penalize each night shift over the limit)
-    if (night_shifts[i] > max_night_shifts_allowed) {
-      energy <- energy + penalties[6] * (night_shifts[i] - max_night_shifts_allowed)
-    }
-    
-    # Check the last shift and whether worker has the last day off
-    lastshift <- subsched[i, ndays, nshifts]
-    prevoff <- all(subsched[i, ndays,] == FALSE)
-    
-    daysoff <- 0
-    twoinarow <- 1  # Variable for tracking consecutive days off
-    
-    # Check for consecutive shifts across weeks and days off in a row
-    if (lastshift == 1) {
-      lastshift <- lastshift + subsched[i, ndays, nshifts - 1]  # Check if last shift is consecutive to the previous week
-    }
-    
-    # Loop through each day in the schedule
-    for (j in 1:ndays) {
-      # If the worker has the day off, check if it satisfies "two days off in a row" condition
-      if (all(subsched[i, j,] == FALSE)) {
-        daysoff <- daysoff + 1
-        if (prevoff) {
-          twoinarow <- 0  # No consecutive off days if previous day was also off
-        }
-        prevoff <- TRUE
-      } else {
-        # If worker worked on the second day of a weekend-like schedule, penalize
-        if (!prevoff && j == 2) {
-          energy <- energy + penalties[5]
-        }
-        prevoff <- FALSE
-      }
-      
-      # Check for wraparound shift streaks and assess penalties
-      if (subsched[i, j, 1] == 1) {
-        lastshift <- lastshift + 1
-        if (lastshift > 1) {
-          energy <- energy + penalties[4]
-        }
-        if (lastshift > 2) {
-          energy <- energy + penalties[1]
-        }
-      } else {
-        lastshift <- 0  # Reset if no shift worked
-      }
-      
-      # Loop through remaining shifts in the day
-      for (k in 2:nshifts) {
-        if (subsched[i, j, k] == 1) {
-          lastshift <- lastshift + 1
-          if (lastshift > 2) {
-            energy <- energy + penalties[1]
-          }
-        } else {
-          lastshift <- 0  # Reset for non-working shifts
-        }
-      }
-    }
-    
-    # After finishing the week, assess penalties related to days off
-    energy <- energy + twoinarow * penalties[3] + (daysoff < 2) * penalties[2]
-  }
-  
-  # Penalize energy according to standard deviation among shifts
-  energy <- energy + penalties[6] * sd(totshift)
-  
-  return(energy)
-}
 
 # Initial schedules
 totalspots <- ndays * sum(doctorstaffing)
