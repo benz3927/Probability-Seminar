@@ -19,7 +19,7 @@ ndays <- 7
 # Ideally, especially for urgent care, a higher doctor to nurse ratio is better
 # 1:2 nurse to patient ratio
 # 1 doctor : 4 nurses
-doctorstaffing <- c(2, 2, 2)
+doctorstaffing <- c(2, 2, 2) # midnight, day, night
 nursestaffing <- c(8, 8, 8)
 
 # Penalties for violating each of six constraints
