@@ -21,8 +21,8 @@ ndays <- 7
 # 1 doctor : 2 nurses or fewer at all times
 # 14-19: 16 patients per 12 hour shift
 # Ideal
-doctorstaffing <- c(6, 4)
-nursestaffing <- c(12, 8)
+doctorstaffing <- c(4, 6)
+nursestaffing <- c(8, 12)
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of two consecutive shifts (including overnight)
