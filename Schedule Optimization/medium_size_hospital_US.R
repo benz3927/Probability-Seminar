@@ -82,7 +82,7 @@ get_energy_sub <- function(subsched, penalties) {
     
     # Penalize if worker exceeds the max number of night shifts allowed (penalize each night shift over the limit)
     if (night_shifts[i] > max_night_shifts_allowed) {
-      energy <- energy + penalties[6] * (night_shifts[i] - max_night_shifts_allowed)
+      energy <- energy + penalties[7] * (night_shifts[i] - max_night_shifts_allowed)
     }
     
     # Check the last shift and whether worker has the last day off
