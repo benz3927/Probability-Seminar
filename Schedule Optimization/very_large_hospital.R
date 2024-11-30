@@ -22,8 +22,8 @@ ndays <- 7
 # 14-19: 16 patients per 12 hour shift
 # Ideal
 # Two 12-hour shifts per day (Day and Night)
-doctorstaffing <- c(50, 60)  # Night, Day
-nursestaffing <- c(100, 120)  # Night, Day
+doctorstaffing <- c(20, 30)  # Night, Day
+nursestaffing <- c(40, 60)  # Night, Day
 
 # Penalties for violating each of six constraints
 # Penalty 1: Each instance of two consecutive shifts (including overnight)
