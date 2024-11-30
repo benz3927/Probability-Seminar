@@ -7,7 +7,7 @@
 ndoctors <- 20
 
 # Number of nurses
-nnurses <- 80
+nnurses <- 50
 
 # Number of days in the schedule
 ndays <- 7
@@ -33,7 +33,7 @@ nursestaffing <- c(8, 12)
 # Penalty 6: Weights for the stdev of nurses'/doctors' shifts in the schedule
 #            (trying to make everyone work similar amounts)
 #Penalty 7: Each instance of working more than three night shifts/week
-penalties <- c(100, 100, 0.5, 5, 1, 2, 50)
+penalties <- c(100, 100, 0.5, 5, 1, 2, 10)
 
 # Number of iterations (if too small, might not be able to explore enough)
 niter <- 50000
@@ -764,12 +764,147 @@ lines(energy, type = "l", col = "#B22222", lwd = 0.75)
 min_energy <- min(energy)
 cat("Lowest energy:", min_energy, "\n")
 
+
+
+# Cosine
+##----------------------------------------------------------------------
+## EVERYTHING YOU NEED TO CHANGE IS IN THIS SECTION OR THE FINAL SECTION
+
+# Number of staff present for each shift (must have same # of shifts)
+# e.g., c(2, 3, 3) has three shifts with 2, 3, 3 people respectively
+# Ideally, especially for urgent care, a higher doctor to nurse ratio is better
+
+# Cosine cooling schedule
+coolingschedule <- function(i, n) {
+  T_start <- 1
+  return(max(1e-6, T_start * (0.5 + 0.5 * cos(pi * i / n))))
+}
+
+## END OF PARAMETER SECTION
+##----------------------------------------------------------------------
+
+# Calculate indices for doctors and nurses
+doctorindices <- c(1, cumsum(doctorstaffing) + 1)
+nurseindices <- c(1, cumsum(nursestaffing) + 1)
+nshifts <- length(doctorstaffing)
+
+# Initial schedules
+totalspots <- ndays * sum(doctorstaffing)
+initialloop <- rep(1:ndoctors, ceiling(totalspots / ndoctors))
+doctorschedule <- matrix(initialloop[1:totalspots], nrow = sum(doctorstaffing), ncol = ndays)
+totalspots <- ndays * sum(nursestaffing)
+initialloop <- rep(1:nnurses, ceiling(totalspots / nnurses))
+nurseschedule <- matrix(initialloop[1:totalspots], nrow = sum(nursestaffing), ncol = ndays)
+
+# Unwrapped schedules for each worker
+doctorsunwrapped <- array(0, c(ndoctors, ndays, nshifts))
+for (i in 1:ndays) {
+  for (j in 1:nshifts) {
+    for (k in doctorindices[j]:(doctorindices[j + 1] - 1)) {
+      doctorsunwrapped[doctorschedule[k, i], i, j] <- 1
+    }
+  }
+}
+
+nursesunwrapped <- array(0, c(nnurses, ndays, nshifts))
+for (i in 1:ndays) {
+  for (j in 1:nshifts) {
+    for (k in nurseindices[j]:(nurseindices[j + 1] - 1)) {
+      nursesunwrapped[nurseschedule[k, i], i, j] <- 1
+    }
+  }
+}
+
+# Starting energy
+energy <- rep(0, niter)
+energy[1] <- get_energy(doctorsunwrapped, nursesunwrapped, penalties)
+
+# Gibbs sampler with exponential cooling schedule
+for (i in 2:niter) {
+  temperature <- coolingschedule(i, niter)
+  
+  if (runif(1) < 0.5) {
+    prop <- doctorschedule
+    posx <- sample(1:sum(doctorstaffing), 1)
+    posy <- sample(1:ndays, 1)
+    available <- 1:ndoctors
+    myblock <- min(which(doctorindices > posx)) - 1
+    for (j in doctorindices[myblock]:(doctorindices[myblock + 1] - 1)) {
+      if (j != posx) {
+        available <- setdiff(available, doctorschedule[j, posy])
+      }
+    }
+    prop[posx, posy] <- sample(available, 1)
+    propunwrapped <- doctorsunwrapped
+    propunwrapped[doctorschedule[posx, posy], posy, myblock] <- 0
+    propunwrapped[prop[posx, posy], posy, myblock] <- 1
+    new_energy <- get_energy(propunwrapped, nursesunwrapped, penalties)
+    if (runif(1) < exp((energy[i - 1] - new_energy) / temperature)) {
+      energy[i] <- new_energy
+      doctorschedule <- prop
+      doctorsunwrapped <- propunwrapped
+    } else {
+      energy[i] <- energy[i - 1]
+    }
+  } else {
+    prop <- nurseschedule
+    posx <- sample(1:sum(nursestaffing), 1)
+    posy <- sample(1:ndays, 1)
+    available <- 1:nnurses
+    myblock <- min(which(nurseindices > posx)) - 1
+    for (j in nurseindices[myblock]:(nurseindices[myblock + 1] - 1)) {
+      if (j != posx) {
+        available <- setdiff(available, nurseschedule[j, posy])
+      }
+    }
+    prop[posx, posy] <- sample(available, 1)
+    propunwrapped <- nursesunwrapped
+    propunwrapped[nurseschedule[posx, posy], posy, myblock] <- 0
+    propunwrapped[prop[posx, posy], posy, myblock] <- 1
+    new_energy <- get_energy(doctorsunwrapped, propunwrapped, penalties)
+    if (runif(1) < exp((energy[i - 1] - new_energy) / temperature)) {
+      energy[i] <- new_energy
+      nurseschedule <- prop
+      nursesunwrapped <- propunwrapped
+    } else {
+      energy[i] <- energy[i - 1]
+    }
+  }
+}
+
+##----------------------------------------------------------------------
+## EVERYTHING YOU NEED TO CHANGE IS IN THIS SECTION OR THE FIRST SECTION
+
+# Lowest energy achieved
+cat("Lowest Energy:", min(energy), "\n")
+
+# Final schedules for doctors and nurses
+print("Final Doctors Schedule:")
+print(doctorschedule)
+print("Final Nurses Schedule:")
+print(nurseschedule)
+
+# Example: Doctor 3's unwrapped schedule
+print("Doctor 3's Schedule:")
+print(doctorsunwrapped[3, , ])
+
+## END OF FINAL SECTION
+##----------------------------------------------------------------------
+
+# Plotting the energy over time
+lines(energy, type = "l", col = "#FF00FF", lwd = 0.75)
+
+# Lowest energy achieved
+min_energy <- min(energy)
+cat("Lowest energy:", min_energy, "\n")
+
 # Add custom legend
 legend("topright", 
-       legend = c("Linear", "Greedy", "Log", "Exponential"),  # New legend text
-       col = c("#4682B4", "#FFA500", "#006400","#B22222"),                # Colors of the lines
-       lty = c(1, 1),                          # Line types for each
-       lwd = c(2, 2),                          # Line widths for each
-       box.lwd = 0.5)                          # Border line width around the legend
+       legend = c("Linear", "Greedy", "Log", "Exponential", "Cosine"),  
+       col = c("#4682B4", "#FFA500", "#006400", "#B22222", "#FF00FF"),  
+       lty = c(1, 1, 1, 1, 1),                                        
+       lwd = c(2, 2, 2, 2, 2),                                   
+       box.lwd = 0.5)                                                 
 
 title(main = "Energy vs. Time")
+
